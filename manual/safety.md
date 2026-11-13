@@ -1,6 +1,6 @@
 # ความปลอดภัย
 
-อ้างอิง: OWASP Top 10 for LLM Apps, NIST SSDF, Rule 32 ของทีม รายงานรีวิวเต็ม: `docs/SECURITY-REVIEW.md` (ทุกข้อติดป้าย VERIFIED / INTERPRETIVE / NOT CHECKED)
+อ้างอิง: OWASP Top 10 for LLM Apps, NIST SSDF, security-by-design rule ของทีม รายงานรีวิวเต็ม: `docs/SECURITY-REVIEW.md` (ทุกข้อติดป้าย VERIFIED / INTERPRETIVE / NOT CHECKED)
 
 ## หลักการ
 
