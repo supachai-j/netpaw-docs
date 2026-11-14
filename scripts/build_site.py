@@ -3,7 +3,7 @@
 Usage: build_site.py [--out site]"""
 import argparse, html, pathlib, re, shutil, sys
 import markdown
-ROOT = pathlib.Path(__file__).resolve().parent.parent
+from common import ROOT
 
 PAGES = [("index", "ภาพรวม"), ("install", "ติดตั้ง"), ("using", "วิธีใช้"), ("skills", "Skill / Tool"),
          ("safety", "ความปลอดภัย"), ("develop", "พัฒนา"), ("compat", "ความเข้ากันได้"), ("troubleshoot", "แก้ปัญหา")]
@@ -30,14 +30,14 @@ def main():
     out.mkdir()
     (out / "style.css").write_text(CSS)
     for slug, title in PAGES:
-        src = ROOT / "manual" / f"{slug}.md"
+        src = ROOT / "docs" / "manual" / f"{slug}.md"
         body = markdown.markdown(src.read_text(), extensions=["tables", "fenced_code", "sane_lists"])
         body = re.sub(r'href="([a-z]+)\.html"', r'href="\1.html"', body)
         nav = "".join(f'<a class="{"on" if s == slug else ""}" href="{s}.html">{html.escape(t)}</a>' for s, t in PAGES)
         (out / f"{slug}.html").write_text(
             f'<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-            f'<meta name="robots" content="noindex"><title>{html.escape(title)} · NetExpertClaw</title><link rel="stylesheet" href="style.css"></head>'
-            f'<body><div class="wrap"><nav><b>NetExpertClaw</b>{nav}</nav><main>{body}<footer>NetExpertClaw manual · เนื้อหาจาก docs/manual ใน repo (private) · ตัวอย่างใช้ IP ช่วง documentation</footer></main></div></body></html>')
+            f'<meta name="robots" content="noindex"><title>{html.escape(title)} · netpaw</title><link rel="stylesheet" href="style.css"></head>'
+            f'<body><div class="wrap"><nav><b>netpaw</b>{nav}</nav><main>{body}<footer>netpaw manual · เนื้อหาจาก docs/manual ใน repo (private) · ตัวอย่างใช้ IP ช่วง documentation</footer></main></div></body></html>')
     print("built", len(PAGES), "pages ->", out)
 
 if __name__ == "__main__":
