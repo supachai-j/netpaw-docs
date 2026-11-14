@@ -3,7 +3,7 @@
 Usage: build_site.py [--out site]"""
 import argparse, html, pathlib, re, shutil, sys
 import markdown
-from common import ROOT
+ROOT = pathlib.Path(__file__).resolve().parent.parent
 
 PAGES = [("index", "ภาพรวม"), ("install", "ติดตั้ง"), ("using", "วิธีใช้"), ("skills", "Skill / Tool"),
          ("safety", "ความปลอดภัย"), ("develop", "พัฒนา"), ("compat", "ความเข้ากันได้"), ("troubleshoot", "แก้ปัญหา")]
@@ -30,7 +30,7 @@ def main():
     out.mkdir()
     (out / "style.css").write_text(CSS)
     for slug, title in PAGES:
-        src = ROOT / "docs" / "manual" / f"{slug}.md"
+        src = ROOT / "manual" / f"{slug}.md"
         body = markdown.markdown(src.read_text(), extensions=["tables", "fenced_code", "sane_lists"])
         body = re.sub(r'href="([a-z]+)\.html"', r'href="\1.html"', body)
         nav = "".join(f'<a class="{"on" if s == slug else ""}" href="{s}.html">{html.escape(t)}</a>' for s, t in PAGES)
