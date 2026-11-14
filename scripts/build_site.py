@@ -48,7 +48,7 @@ def main():
     if out.exists(): shutil.rmtree(out)
     out.mkdir()
     (out / "style.css").write_text(CSS)
-    m = ROOT / "docs" / "manual"
+    m = ROOT / "manual"
     n = render(PAGES, m, out, "en", "Overview", "ภาษาไทย", "th/index.html")
     t = render(TH_PAGES, m / "th", out / "th", "th", "ภาพรวม", "English", "../index.html")
     print("built", n, "English +", t, "Thai pages ->", out)
