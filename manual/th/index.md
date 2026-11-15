@@ -1,33 +1,35 @@
-> หน้านี้เป็นฉบับภาษาไทยที่อาจตามไม่ทันฉบับภาษาอังกฤษ ([English](../index.html)) ปัจจุบันมี 5 skill: subnet-calculator, fwrule-analyzer, rfc-lookup, eve-lab-topology-design และ wikipedia-research ทั้งหมดเป็น `experimental` และอ่านอย่างเดียว ตารางสถานะด้านล่างเป็นของรุ่นแรก ให้ดูหน้า Skill และ [Supported agents](../agents.html) ที่เป็นปัจจุบัน
+> หน้านี้เป็นคำแปลภาษาไทยของคู่มือภาษาอังกฤษ ([English](../index.html)) ถ้าเนื้อหาไม่ตรงกัน ให้ถือฉบับภาษาอังกฤษเป็นหลัก
 
-# netpaw — คู่มือใช้งาน
+# เอกสาร netpaw
 
-**netpaw** คือชุด skill และ MCP tool สำหรับวิศวกรเครือข่าย เขียนครั้งเดียวแล้วใช้ได้กับ 5 agent runtime: **Claude Code, Codex, Hermes Agent, OpenClaw, thClaws**
+netpaw รวม skill ด้านงาน network engineering ไว้ให้ AI agent ใช้ **skill** คือไฟล์คำสั่งสั้น ๆ (`SKILL.md` ตามรูปแบบเปิด [Agent Skills](https://agentskills.io)) ที่บอก agent ว่าควรใช้ **tool** ชุดหนึ่งเมื่อไรและใช้อย่างไร ส่วน tool คือ [MCP](https://modelcontextprotocol.io) server ขนาดเล็กที่รันในเครื่องผ่าน stdio ซอร์สชุดเดียวติดตั้งได้ทั้งใน Claude Code, Codex, Hermes Agent, OpenClaw และ thClaws
 
-แนวคิดมาจาก [NetClaw](https://github.com/automateyournetwork/netclaw) (Apache-2.0) แต่เราไม่ fork ทั้งก้อน เลือก import ทีละ skill ผ่านสคริปต์ที่ pin commit และผ่านการรีวิวความปลอดภัยก่อน
+## เริ่มจากตรงไหน
 
-## สถานะปัจจุบัน (ตรงตามหลักฐาน)
+1. [เริ่มต้นใช้งาน](getting-started.html) - ติดตั้งให้ agent ของคุณภายในห้านาที
+2. [การใช้ skill](using.html) - ตัวอย่าง prompt และผลลัพธ์จริง
+3. [รายการ skill](skills.html) - tool ทุกตัว กฎของ input การเข้าถึงเครือข่าย และข้อจำกัด
+4. [แนวคิด](concepts.html) - ส่วนต่าง ๆ ทำงานร่วมกันอย่างไร ระดับความพร้อม และทำไมจึงเป็น read-only
+5. [Agent ที่รองรับ](agents.html) - ทดสอบอะไรกับ agent ตัวไหนแล้ว และอะไรที่ยังไม่ได้ทดสอบ
+6. [ความปลอดภัย](safety.html) - threat model, control และความเสี่ยงที่ยังเหลืออยู่
+7. [การพัฒนา](develop.html) - เพิ่ม skill หรือ MCP server
+8. [การแก้ปัญหา](troubleshoot.html)
 
-| เรื่อง | สถานะ |
+หน้าภาษาไทย: [ภาษาไทย](index.html) (อาจอัปเดตช้ากว่าหน้าภาษาอังกฤษ)
+
+## สถานะโดยสรุป
+
+| หัวข้อ | สถานะ |
 |---|---|
-| Skill ที่ใช้ได้ | `subnet-calculator` (คำนวณ subnet), `fwrule-analyzer` (วิเคราะห์ rule firewall ซ้อนทับ/shadow) |
-| ทั้งสองตัว | **read-only** ไม่แตะอุปกรณ์ ไม่ใช้ credential |
-| Claude Code, Hermes | ทดสอบกับ runtime จริงแล้ว (Claude Code ทดสอบกับโมเดลจริง) |
-| Codex, OpenClaw, thClaws | ทดสอบเส้นทาง runtime → MCP ด้วยโมเดลจำลอง ยังไม่ได้ทดสอบกับโมเดลจริง ; `fwrule-analyzer` ใช้ได้บน OpenClaw และ thClaws แต่ **ยังไม่ขึ้นใน Codex** (กำลังวินิจฉัย) |
-| Skill ที่เขียน config อุปกรณ์ | **ยังไม่มี** ตั้งใจเลื่อนไปจนกว่าจะมีด่านอนุมัติฝั่ง server (ดูหน้า [ความปลอดภัย](safety.html)) |
+| Skill | 5 ตัว ทั้งหมดเป็น `experimental` และ read-only ทั้งหมด |
+| Agent ที่ทดสอบแล้ว | Claude Code, Hermes Agent (runtime จริง); Codex, OpenClaw, thClaws (mock model) |
+| ผลกับ model จริง | มีเฉพาะ Claude Code ส่วน agent อื่นยังไม่มีหลักฐานว่าเลือกใช้ skill ได้เมื่อใช้ LLM จริง |
+| การแก้ไขอุปกรณ์ | ไม่มี ไม่มี skill ใดเขียนค่าลงอุปกรณ์ |
+| แพลตฟอร์ม | Ubuntu 24.04 x86_64 เท่านั้น |
+| การเผยแพร่ | GitHub เท่านั้น ไม่มีบน PyPI หรือ npm |
 
-> อย่าอ่านตารางข้างบนเป็น "รองรับครบ" — ดูรายละเอียดและข้อจำกัดที่หน้า [ความเข้ากันได้](compat.html)
+ให้อ่านสถานะนี้เป็นข้อจำกัด ไม่ใช่ว่า "รองรับเต็มรูปแบบ" หลักฐานอยู่ใน [docs/CONFORMANCE.md](https://github.com/supachai-j/netpaw/blob/main/docs/CONFORMANCE.md) และ [docs/READINESS.md](https://github.com/supachai-j/netpaw/blob/main/docs/READINESS.md)
 
-## อ่านอะไรก่อน
+## การจัดการข้อมูล
 
-1. [ติดตั้ง](install.html) — เลือก runtime ที่คุณใช้
-2. [วิธีใช้](using.html) — ตัวอย่างคำสั่งถาม agent และผลลัพธ์จริง
-3. [Skill ทั้งหมด](skills.html) — รายการ tool และพารามิเตอร์
-4. [ความปลอดภัย](safety.html) — สิ่งที่ควรรู้ก่อนใช้กับเครือข่ายจริง
-5. [พัฒนา/เพิ่ม skill](develop.html) — สำหรับทีมที่จะต่อยอด
-6. [แก้ปัญหา](troubleshoot.html)
-
-## ข้อควรระวังเรื่องข้อมูล
-
-- ตัวอย่างทั้งหมดใช้ IP ช่วง documentation (192.0.2.0/24, 2001:db8::/32) อย่าใส่ข้อมูลลูกค้าจริงลงใน skill, ตัวอย่าง หรือไฟล์ที่ commit
-- config firewall ที่ส่งให้ `fwrule-analyzer` ผ่าน LLM อาจมีข้อมูลอ่อนไหว ให้ทำ sanitize ก่อน (PDPA)
+ตัวอย่างทั้งหมดใช้ช่วง address สำหรับเอกสาร (192.0.2.0/24, 198.51.100.0/24, 203.0.113.0/24, 2001:db8::/32) อย่าใส่ชื่อลูกค้า hostname, IP หรือ config อุปกรณ์จริงลงใน prompt, issue หรือ commit ข้อมูลใดก็ตามที่ให้ agent อาจถูกส่งออกจากเครื่องไปยังผู้ให้บริการ model ของ agent นั้น ควร sanitise config ของ firewall ก่อนเสมอ

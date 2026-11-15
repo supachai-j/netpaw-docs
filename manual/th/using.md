@@ -1,62 +1,45 @@
-# วิธีใช้
+# การใช้ skill
 
-ไม่ต้องจำชื่อ tool บอก agent ว่าต้องการอะไรเป็นภาษาธรรมดา agent จะเลือก skill ตามคำอธิบายแล้วเรียก tool เอง (ชื่อ tool ต่างกันตาม runtime — Codex: `mcp__subnet_calc`, thClaws: `subnet-calc__same_subnet`, OpenClaw: ผ่าน `tool_search`)
+ไม่จำเป็นต้องรู้ชื่อ tool แค่อธิบายงานที่ต้องการ agent จะเลือก skill จากคำอธิบายของ skill แล้วเรียก tool เอง ผลลัพธ์ด้านล่างได้จากการเรียก tool จริง ส่วนความแม่นยำที่ model *จริง* เลือก skill ได้ถูกต้องวัดไว้ใน `docs/evals/TRIGGER-RESULTS.md` และยังไม่สมบูรณ์ (ดู [แนวคิด](concepts.html))
 
-> ผลด้านล่างมาจากการเรียก tool จริง แต่ **การที่โมเดลจริงเลือก skill เองได้ดีแค่ไหน** ทดสอบแล้วเฉพาะ Claude Code
+## คำนวณ subnet
 
-## 1. คำนวณ subnet (`subnet-calculator`)
-
-**ถาม:** "ขอรายละเอียดของ 192.0.2.0/26 รวม wildcard mask สำหรับ ACL"
-
-**ผลที่ tool คืน (ตัดบางส่วน):**
+*"ขอรายละเอียดของ 192.0.2.0/26 รวมถึง wildcard mask สำหรับ ACL"*
 
 | ฟิลด์ | ค่า |
 |---|---|
 | network / broadcast | 192.0.2.0 / 192.0.2.63 |
 | netmask / wildcard | 255.255.255.192 / 0.0.0.63 |
-| usable hosts | 62 (192.0.2.1 – 192.0.2.62) |
+| usable hosts | 62 (192.0.2.1 - 192.0.2.62) |
 | previous / next | 192.0.1.192/26 / 192.0.2.64/26 |
-| classification | documentation (RFC 5737/3849) |
+| classification | documentation (RFC 5737) |
 
-ใช้ใน ACL: `permit ip 192.0.2.0 0.0.0.63 any`
+prompt อื่น ๆ: *"ใน 2001:db8::/48 มี /64 กี่วง?"* (65,536) *"วาง VLSM สำหรับ 500, 100 และ 10 host ภายใน 10.20.0.0/16"* input ต้องเป็น network แบบ canonical ถ้าใส่ `192.0.2.5/26` จะถูกปฏิเสธ ไม่ใช่แก้ให้เงียบ ๆ
 
-**ถาม:** "2001:db8::/48 มี /64 กี่ก้อน" → ตอบ **65,536** และระบุว่าเป็น site allocation
+## รีวิว firewall rule
 
-**ถาม:** "192.0.2.10 กับ 192.0.2.70 อยู่ subnet เดียวกันไหมที่ /26" → **ไม่** (192.0.2.0/26 กับ 192.0.2.64/26)
+*"rule ใหม่นี้จะถูก shadow ไหม? rule เดิม: deny tcp 443 from 10.0.0.0/8 to 192.0.2.0/24 rule ใหม่: permit tcp 443 from 10.1.0.0/16 to 192.0.2.10/32"*
 
-**ป้อน input ผิด:** ถ้าส่ง `192.0.2.5/26` (มี host bits) tool ปฏิเสธและ agent ควรแนะนำ `192.0.2.0/26` แทน ไม่เดาให้เงียบ ๆ
+ผลลัพธ์: `overlap_type: shadowed` severity `critical` - rule deny ที่อยู่ก่อนและกว้างกว่าครอบ permit ใหม่ทั้งหมด permit นี้จึงไม่มีวัน match ลำดับที่แนะนำ: ใช้ `parse_policy` เพื่อ normalise config ของ vendor แล้วใช้ `analyze_firewall_rule_overlap` (หรือ `batch_analyze_overlap`) กับ rule ที่จะเพิ่ม จากนั้นให้คนอนุมัติการเปลี่ยนแปลง skill นี้ไม่แตะอุปกรณ์เลย parser ทำงานแบบ best effort ให้เทียบผลลัพธ์กับ config จริง และ sanitise config ก่อนส่งให้ model
 
-### สูตรที่ใช้บ่อย
-- **ลิงก์ point-to-point:** IPv4 /30 (2 usable) หรือ /31 (RFC 3021) ; IPv6 /127 (RFC 6164)
-- **VLSM:** บอกความต้องการเป็นรายการ (เช่น Eng 500 host, Sales 100, Mgmt 10) agent จะเรียงจากใหญ่ไปเล็ก เลือก prefix ที่เล็กที่สุดที่พอ แล้วทำตารางแผนที่อยู่ ตรวจแต่ละก้อนด้วย tool
-- **IPv6 site:** /48 ต่อ site, /64 ต่อ VLAN
+## อ้างอิง RFC
 
-## 2. วิเคราะห์ rule firewall (`fwrule-analyzer`)
+*"RFC 4271 พูดถึงความปลอดภัยของ BGP session ว่าอย่างไร? ยก section มาด้วย"* agent จะค้นใน index ดึง section จาก rfc-editor.org แล้วตอบพร้อมข้อความที่ยกมาและหมายเลข section ข้อความที่ดึงมาถือเป็นข้อมูลที่ไม่น่าเชื่อถือ ถ้าในหน้า RFC มีคำสั่งแฝงอยู่ agent ควรเพิกเฉย
 
-ใช้ตรวจ rule ใหม่ก่อนเพิ่ม (ซ้อนทับ, ถูกบัง, ขัดแย้ง, ซ้ำ) หรือ audit ทั้ง policy รองรับ PAN-OS, ASA, FTD, IOS/IOS-XE, IOS-XR, Check Point, SRX, Junos, Nokia SR OS, FortiOS
+## ตรวจ lab ของ EVE-NG
 
-**ถาม:** "ตรวจว่า rule ใหม่นี้ถูก rule เดิมบังไหม — เดิม: deny tcp 443 จาก 10.0.0.0/8 ไป 192.0.2.0/24 ; ใหม่: permit tcp 443 จาก 10.1.0.0/16 ไป 192.0.2.10/32"
+วางข้อความจากไฟล์ `.unl` ที่ export ออกมา พร้อมความต้องการของคุณ (เช่น "core สองตัว distribution แบบ dual-homed ไม่มี host ต่อเข้ากับ core") tool จะรายงาน node ที่ไม่มีการเชื่อมต่อ link ที่ค้างอยู่ partition, adjacency ที่ห้ามมี single point of failure และจำนวน uplink tool เดา role จากชื่อ node (`CORE1`, `SW2`) ถ้าเดาผิดให้ส่ง `roles_json` เข้าไป tool ไม่ได้ตรวจ image, RAM, routing หรือความเร็ว interface
 
-**ผลจริง:** `overlap_type: shadowed`, severity `critical` — rule ใหม่ (permit) ถูก rule เดิม (deny) ซึ่งอยู่ก่อนและครอบคลุมกว่าบังทั้งหมด จึงไม่มีวันถูกใช้ ทั้ง source และ destination เป็น subset
+## ค้นข้อมูลพื้นฐาน
 
-**ลำดับที่แนะนำ:**
+*"ขอประวัติของ OSPF พร้อมแหล่งอ้างอิง"* agent จะอ่าน Wikipedia ผ่าน `en.wikipedia.org/w/api.php` แล้วตอบเป็นสรุปพร้อม URL และหมายเหตุสัญญาอนุญาต CC BY-SA ถ้าต้องการรู้ว่ามาตรฐานกำหนดอะไรจริง ๆ ให้ใช้ rfc-lookup แทน
 
-1. `parse_policy` แปลง config ของ vendor เป็น JSON กลาง ตรวจจำนวน rule และ object ที่ resolve
-2. `analyze_firewall_rule_overlap` (หรือ `batch_analyze_overlap` ถ้ามีหลาย rule) ตรวจ rule ใหม่กับ policy
-3. สรุปผล: อนุมัติ / แก้ / ปฏิเสธ — **การอนุมัติและการแก้บนอุปกรณ์ทำโดยคน** skill นี้ไม่แก้ firewall
-4. ถ้า parser ของ vendor ให้ผลแปลก ให้ส่งเป็น JSON ที่ normalize แล้วแทน (Mode 2)
+## ค้นข้อมูล BGP และ registry
 
-> พึงระวัง: parser เป็น best-effort ตรวจผลที่ได้เทียบกับ config จริงเสมอ และ sanitize config ก่อนส่งเข้า LLM
+*"เราได้รับ 193.0.0.0/24 จาก AS3333 มัน RPKI valid ไหม และใครเป็นเจ้าของ address space นี้?"* agent จะถาม validator ของ RIPE NCC เกี่ยวกับคู่นี้ แล้วถาม RDAP ของ registry ที่รับผิดชอบ กรณีนี้คาดว่าจะได้ `invalid` ด้วยเหตุผล `length` (ROA อนุญาตเฉพาะ /21) ส่วน `not_found` หมายถึงไม่มี ROA ซึ่งเป็นเรื่องปกติ ไม่ใช่ข้อค้นพบ address แบบ private, reserved และ documentation จะถูกปฏิเสธก่อนส่งข้อมูลใด ๆ ออกไป ดังนั้นให้ถามเฉพาะทรัพยากรสาธารณะ คำถามอื่นที่ตอบได้: mailbox สำหรับแจ้ง abuse ของ address, prefix ที่ AS หนึ่งประกาศ (มุมมองจาก RIPE RIS) และ network นั้น peer อยู่ที่ไหน (PeeringDB ข้อมูลที่เจ้าของรายงานเอง)
 
-## เรียกตรงจากบรรทัดคำสั่ง (ไม่ผ่าน agent)
+## Automation และการใช้แบบ headless
 
-ใช้ทดสอบ MCP server เองได้ด้วย stdio client:
-
-```bash
-uv run --no-project --isolated --with mcp==1.30.0 python tests/smoke_mcp.py
-```
-
-## ใช้ใน automation / headless
-
-- Codex `exec`: tool read-only ทำงานได้ (มี annotation) ; tool แบบเขียน (ในอนาคต) จะถูกบล็อกถ้าไม่มีคนอนุมัติ
-- thClaws `-p` และ OpenClaw `agent --local` **ไม่ถามอนุมัติเลยสำหรับการเรียก MCP tool ทุกครั้ง รวมครั้งแรก** (allowlist ของ thClaws คุมแค่การสตาร์ท server ไม่ได้คุมการเรียก tool) ดังนั้นอย่าต่อ tool ที่แก้อุปกรณ์เข้ากับโหมดเหล่านี้ (ดู [ความปลอดภัย](safety.html))
+- Codex `exec` รัน tool แบบ read-only ได้ tool ที่ไม่มี `readOnlyHint` จะถูกปฏิเสธ
+- thClaws `-p` และ OpenClaw `agent --local` รัน MCP tool **โดยไม่ถาม** แม้แต่ tool ที่เขียนข้อมูล นี่คือเหตุผลที่ netpaw ยังไม่มี tool ที่เขียนข้อมูล และเมื่อมีจะบังคับการอนุมัติภายใน server เอง
+- คุณสั่ง server โดยตรงได้ด้วย `uv run --no-project --isolated --with mcp==1.30.0 python tests/smoke_mcp.py`
