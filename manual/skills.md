@@ -1,6 +1,6 @@
 # Skill catalog
 
-All five skills are `risk: read` and `maturity: experimental`. Every tool is annotated read-only, takes strict input (unknown fields are rejected), needs no credentials and never changes a device. List them with `netpaw list`.
+All six skills are `risk: read` and `maturity: experimental`. Every tool is annotated read-only, takes strict input (unknown fields are rejected), needs no credentials and never changes a device. List them with `netpaw list`.
 
 | Skill | Server | Tools | Network |
 |---|---|---|---|
@@ -9,6 +9,7 @@ All five skills are `risk: read` and `maturity: experimental`. Every tool is ann
 | rfc-lookup | `rfc-lookup` | 3 | `www.rfc-editor.org` |
 | eve-lab-topology-design | `eve-lab` | 1 | none |
 | wikipedia-research | `wikipedia` | 5 | `en.wikipedia.org` |
+| bgp-registry-intel | `bgp-intel` | 7 | `rpki-validator.ripe.net`, `stat.ripe.net`, `www.peeringdb.com`, `data.iana.org`, RDAP of the five RIRs |
 
 ## subnet-calculator (v0.1.0, original)
 
@@ -54,3 +55,12 @@ Our launcher marks the tools read-only and refuses to start if the upstream tool
 | `nmap` | scanning needs scope control first |
 
 The classification of all 242 NetClaw skills is in `docs/imports/NETCLAW-TRIAGE.md` and the plan by wave in `docs/imports/NETCLAW-PLAN.md`.
+
+## bgp-registry-intel (v0.1.0, original implementation)
+
+`rpki_validate`, `registry_lookup`, `registry_abuse_contact`, `routing_as_overview`, `routing_announced_prefixes`, `peering_network`, `peering_presence`. Public, unauthenticated sources only: RIPE NCC RPKI validator, RIPEstat, RDAP at the responsible RIR (found through the IANA bootstrap), PeeringDB. Fixed host and path allow-list; redirects refused except an RDAP referral between the five RIRs (two hops at most); 15 s deadline; 8 MB cap; serial with 0.25 s between requests per host (3.1 s for PeeringDB); cache per source (RPKI 5 min, RIPEstat and PeeringDB 1 h, RDAP and bootstrap 24 h).
+
+- RPKI results keep `valid`, `invalid` (reason `as` or `length`) and `not_found` apart; a failed lookup is `validation_unavailable`, never `not_found`.
+- Private, reserved and documentation prefixes and ASNs are refused locally before any request.
+- Registry answers are filtered: contact records of individuals (name, email, phone, address) are dropped, abuse mailboxes registered to an individual are withheld, and phone-like numbers in free text are masked. Free-text fields (object, organisation and holder names) can still contain a person's name. PeeringDB contact records are never returned (`peering_presence` asks PeeringDB for `depth=2`, whose answer can include them; they are discarded).
+- Limits: one RPKI validator, no second opinion. A referral to a national registry (for example registro.br behind LACNIC) is reported, not followed. Any prefix that overlaps special-purpose space is refused, so ask about the specific public prefix. Not tested against rate limiting by the sources. Verified live on 2026-11-15 only.

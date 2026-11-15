@@ -27,7 +27,7 @@ bin/netpaw uninstall --apply
 - **Dry run is the default.** Nothing is written without `--apply`.
 - `--with-mcp` edits the agent's own config for Codex (`config.toml`), Hermes (`config.yaml`) and thClaws (project `.thclaws/mcp.json`). It keeps one backup per file (`*.bak-netpaw`, mode 0600) and only adds entries it owns. Backups can contain secrets from your original config; delete them when you are done.
 - A manifest at `~/.netpaw/manifest.json` records a hash of every installed file; `uninstall` leaves files you edited.
-- Profiles: `minimal` (subnet-calculator), `standard` (+ fwrule-analyzer, eve-lab-topology-design), `online` (adds rfc-lookup and wikipedia-research, which use the internet), `full` (everything). Add single skills with `-s <skill>`.
+- Profiles: `minimal` (subnet-calculator), `standard` (+ fwrule-analyzer, eve-lab-topology-design), `online` (adds rfc-lookup, wikipedia-research and bgp-registry-intel, which use the internet), `full` (everything). Add single skills with `-s <skill>`.
 - Agents the installer knows but we have **not** tested (`.agents/skills`, opencode, Cursor, Gemini CLI) need `--allow-untested`.
 - There is no `pip install netpaw` or `npx netpaw`; do not install a package with that name.
 

@@ -10,7 +10,7 @@ Levels: **L1** the agent sees the skill, **L2** it accepts the MCP config, **L3*
 | thClaws | 0.156.0 | L1-L4 | mock |
 | OpenClaw | 2026.11.3 | L1-L4 | mock |
 
-Tested on Ubuntu 24.04 x86_64. Windows and macOS have not been tried. Raw commands and output: `docs/CONFORMANCE.md`. Later re-tests with five servers installed found: thClaws and OpenClaw call wikipedia correctly; Codex sometimes showed none of the MCP tools in the first turns (cause unknown), and wikipedia on Codex is unproven.
+Tested on Ubuntu 24.04 x86_64. Windows and macOS have not been tried. Raw commands and output: `docs/CONFORMANCE.md`. Later re-tests with five servers installed found: thClaws and OpenClaw call wikipedia correctly. On Codex, in a fresh `CODEX_HOME`, the tester saw only the server that answered instantly from a cache (fwrule) in the first four sessions, and all five from the fifth session on (six repeats, same result; waiting 40 s did not help). The working explanation is that Codex hides servers that are slow to start. Every server now answers `initialize` and `tools/list` from a hash-checked cache through the shared proxy (about 0.03 s measured locally) and starts the real server on the first call; whether that removes the effect on Codex has **not** been re-measured yet.
 
 ## Per-agent behaviour worth knowing
 

@@ -34,6 +34,10 @@ Paste the text of an exported `.unl` file and your requirements (for example "tw
 
 *"Give me the history of OSPF with sources."* The agent reads Wikipedia through `en.wikipedia.org/w/api.php` and returns a summary with URLs and the CC BY-SA licence note. For what a standard actually requires, use rfc-lookup instead.
 
+## BGP and registry lookups
+
+*"We are receiving 193.0.0.0/24 from AS3333. Is it RPKI valid, and who holds the space?"* The agent asks the RIPE NCC validator about the pair, then RDAP at the responsible registry. Expect `invalid` with reason `length` here (the ROA allows only the /21). `not_found` means no ROA exists, which is normal and not a finding. Private, reserved and documentation addresses are refused before anything is sent, so ask about public resources only. Other questions it answers: the abuse mailbox for an address, the prefixes an AS announces (RIPE RIS view), and where a network peers (PeeringDB, self-reported).
+
 ## Automation and headless use
 
 - Codex `exec` runs read-only tools; a tool without `readOnlyHint` is refused.
