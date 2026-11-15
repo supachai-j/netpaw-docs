@@ -3,7 +3,7 @@
 Usage: build_site.py [--out site]"""
 import argparse, html, pathlib, re, shutil, sys
 import markdown
-from common import ROOT
+ROOT = pathlib.Path(__file__).resolve().parent.parent
 
 PAGES = [("index", "Overview"), ("getting-started", "Getting started"), ("using", "Using the skills"), ("skills", "Skill catalog"),
          ("concepts", "Concepts"), ("agents", "Supported agents"), ("safety", "Safety"), ("develop", "Develop"),
@@ -49,7 +49,7 @@ def main():
     if out.exists(): shutil.rmtree(out)
     out.mkdir()
     (out / "style.css").write_text(CSS)
-    m = ROOT / "docs" / "manual"
+    m = ROOT / "manual"
     n = render(PAGES, m, out, "en", "Overview", "ภาษาไทย", "th/index.html")
     t = render(TH_PAGES, m / "th", out / "th", "th", "ภาพรวม", "English", "../index.html")
     print("built", n, "English +", t, "Thai pages ->", out)
