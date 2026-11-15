@@ -18,7 +18,7 @@
 |---|---|
 | Claude Code | skill แสดงเป็น `netpaw:<skill>` ส่วน MCP แสดงเป็น `plugin:netpaw:<server>` ถ้าเปิดตัว repo เองจะเห็น server สถานะ `failed` หนึ่งตัวจาก `.mcp.json` ที่ root (ไม่มีผลเสีย) |
 | Codex | ชื่อ tool มี namespace เป็น `mcp__<server>` (ขีด `-` กลายเป็น `_`) `exec` ปฏิเสธ tool ที่ไม่มี `readOnlyHint` ตอน cold start อาจไม่เห็น tool ในช่วงแรก ๆ |
-| Hermes | ติดตั้งด้วย installer ทางการ ไม่ใช่ pip ถ้ามี block `mcp_servers:` อยู่แล้วให้ merge เอง |
+| Hermes | ติดตั้งด้วย installer ทางการ ไม่ใช่ pip ถ้า `config.yaml` มี `mcp_servers:` อยู่แล้ว `--with-mcp` จะพิมพ์บรรทัดให้นำไปวางเองแทนการแก้ไฟล์ |
 | OpenClaw | ต้องใช้ Node 24.16+ (Node 22 จะติดตั้งเวอร์ชันเก่าโดยไม่แจ้ง) `mcp set` รับ server object ทีละตัว เรียก tool ผ่าน `tool_search` แล้วตามด้วย `dispatch_action` ผลลัพธ์ถูกห่อเป็นเนื้อหาภายนอกที่ไม่น่าเชื่อถือ |
 | thClaws | การอนุมัติ stdio server ผูกกับ command line เต็มและ working directory `-p` ไม่รัน slash command และไม่ถามซ้ำ บน Linux `--cli` ต้องมี `libwebkit2gtk-4.1-0 libsoup-3.0-0 libjavascriptcoregtk-4.1-0` |
 

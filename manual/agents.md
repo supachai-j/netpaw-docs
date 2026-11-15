@@ -18,7 +18,7 @@ Tested on Ubuntu 24.04 x86_64. Windows and macOS have not been tried. Raw comman
 |---|---|
 | Claude Code | Skills appear as `netpaw:<skill>`; MCP as `plugin:netpaw:<server>`. Opening the repo itself shows one `failed` server from the root `.mcp.json` (harmless). |
 | Codex | Tool names are namespaced `mcp__<server>` (dashes become `_`). `exec` refuses tools without `readOnlyHint`. Cold start may hide tools for the first turns. |
-| Hermes | Install with the official installer, not pip. Merge `mcp_servers:` by hand if you already have the block. |
+| Hermes | Install with the official installer, not pip. If `config.yaml` already has `mcp_servers:`, `--with-mcp` prints the lines to paste under it instead of editing the file. |
 | OpenClaw | Needs Node 24.16+ (Node 22 silently installs an old version). `mcp set` takes one server object. Tools are reached via `tool_search` then `dispatch_action`; results are wrapped as external untrusted content. |
 | thClaws | Approval of an stdio server is tied to the full command line and working directory. `-p` runs no slash commands and does not re-ask. Linux `--cli` needs `libwebkit2gtk-4.1-0 libsoup-3.0-0 libjavascriptcoregtk-4.1-0`. |
 

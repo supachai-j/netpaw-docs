@@ -21,11 +21,14 @@ bin/netpaw list        # skills with risk, maturity and network egress
 ```bash
 bin/netpaw install -a codex hermes -p standard --root "$PWD"
 bin/netpaw install -a codex -p standard --root "$PWD" --with-mcp --apply
-bin/netpaw uninstall --apply
+bin/netpaw uninstall            # dry run: lists what would be removed
+bin/netpaw uninstall --apply    # no --root needed; paths come from the manifest
 ```
 
 - **ค่าเริ่มต้นคือ dry run** จะไม่มีการเขียนไฟล์ใดถ้าไม่ใส่ `--apply`
 - `--with-mcp` จะแก้ config ของ agent เองสำหรับ Codex (`config.toml`), Hermes (`config.yaml`) และ thClaws (`.thclaws/mcp.json` ของ project) โดยเก็บ backup ไว้ไฟล์ละหนึ่งชุด (`*.bak-netpaw`, mode 0600) และเพิ่มเฉพาะ entry ที่ตัวเองเป็นเจ้าของ backup อาจมี secret จาก config เดิมของคุณอยู่ ใช้งานเสร็จแล้วให้ลบทิ้ง
+- **ผู้ใช้ Hermes ที่มี key `mcp_servers:` อยู่แล้ว** (ส่วนใหญ่มี): netpaw ไม่แก้ YAML mapping ที่มีอยู่ `--with-mcp` จะปฏิเสธและพิมพ์บรรทัดที่ต้องนำไปวางใต้ `mcp_servers:` ของคุณ แล้วรีสตาร์ท Hermes ตอนถอนการติดตั้งให้ลบบรรทัดเหล่านั้นเอง
+- ถ้า netpaw เป็นผู้สร้างไฟล์ config เอง `uninstall` จะลบไฟล์นั้นทิ้งเมื่อไม่มีอะไรเหลือ (และไม่สร้าง `.bak-netpaw` ให้ไฟล์นั้น)
 - manifest ที่ `~/.netpaw/manifest.json` บันทึก hash ของทุกไฟล์ที่ติดตั้ง และ `uninstall` จะไม่ลบไฟล์ที่คุณแก้ไขเอง
 - Profile: `minimal` (subnet-calculator), `standard` (+ fwrule-analyzer, eve-lab-topology-design), `online` (เพิ่ม rfc-lookup, wikipedia-research และ bgp-registry-intel ซึ่งใช้อินเทอร์เน็ต), `full` (ทั้งหมด) เพิ่ม skill ทีละตัวได้ด้วย `-s <skill>`
 - Agent ที่ installer รู้จักแต่เรา **ยังไม่ได้** ทดสอบ (`.agents/skills`, opencode, Cursor, Gemini CLI) ต้องใส่ `--allow-untested`

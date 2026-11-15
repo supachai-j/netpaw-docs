@@ -21,11 +21,14 @@ Dry run first (default), then apply:
 ```bash
 bin/netpaw install -a codex hermes -p standard --root "$PWD"
 bin/netpaw install -a codex -p standard --root "$PWD" --with-mcp --apply
-bin/netpaw uninstall --apply
+bin/netpaw uninstall            # dry run: lists what would be removed
+bin/netpaw uninstall --apply    # no --root needed; paths come from the manifest
 ```
 
 - **Dry run is the default.** Nothing is written without `--apply`.
 - `--with-mcp` edits the agent's own config for Codex (`config.toml`), Hermes (`config.yaml`) and thClaws (project `.thclaws/mcp.json`). It keeps one backup per file (`*.bak-netpaw`, mode 0600) and only adds entries it owns. Backups can contain secrets from your original config; delete them when you are done.
+- **Hermes users with an existing `mcp_servers:` key** (most installs): netpaw does not edit an existing YAML mapping. `--with-mcp` refuses and prints the exact lines to paste under your `mcp_servers:`; restart Hermes afterwards. Remove them by hand when you uninstall.
+- If netpaw created the config file, `uninstall` deletes it again when nothing else is left in it (and makes no `.bak-netpaw` for it).
 - A manifest at `~/.netpaw/manifest.json` records a hash of every installed file; `uninstall` leaves files you edited.
 - Profiles: `minimal` (subnet-calculator), `standard` (+ fwrule-analyzer, eve-lab-topology-design), `online` (adds rfc-lookup, wikipedia-research and bgp-registry-intel, which use the internet), `full` (everything). Add single skills with `-s <skill>`.
 - Agents the installer knows but we have **not** tested (`.agents/skills`, opencode, Cursor, Gemini CLI) need `--allow-untested`.
